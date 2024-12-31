@@ -1,0 +1,133 @@
+1. Round Robin (Default)
+How it works: Requests are distributed evenly across all servers in the upstream block.
+When to use: Suitable for stateless applications or when all backend servers have equal capacity.
+
+Example:
+
+upstream app_servers {
+    server 192.168.101.14:5024;
+    server 192.168.101.15:5024;
+}
+
+
+2. Least Connections
+How it works: Routes requests to the server with the fewest active connections.
+When to use: Useful when the backend servers have varying response times or when traffic patterns vary.
+
+Example:
+
+
+upstream app_servers {
+    least_conn;
+    server 192.168.101.14:5024;
+    server 192.168.101.15:5024;
+}
+
+
+3. IP Hash (Sticky Sessions)
+How it works: Maps requests to servers based on the client’s IP address.
+When to use: Useful for applications that require session persistence without external session storage.
+
+Example:
+
+upstream app_servers {
+    ip_hash;
+    server 192.168.101.14:5024;
+    server 192.168.101.15:5024;
+}
+
+
+4. Weighted Load Balancing
+How it works: Assigns weights to servers to distribute traffic unevenly based on their capacity.
+When to use: Use when servers have different resource capabilities or configurations.
+
+
+Example:
+
+upstream app_servers {
+    server 192.168.101.14:5024 weight=3;
+    server 192.168.101.15:5024 weight=1;
+}
+
+
+5. Health Checks (With Nginx Plus or Modules)
+How it works: Monitors backend server health and removes unhealthy servers from the load balancing pool.
+When to use: Critical for high-availability systems.
+
+Example (requires Nginx Plus):
+
+upstream app_servers {
+    server 192.168.101.14:5024;
+    server 192.168.101.15:5024;
+    health_check;
+}
+
+
+6. Least Time (With Nginx Plus)
+How it works: Routes requests to the server with the lowest average response time and least number of active connections.
+When to use: Useful for applications where response time is critical.
+
+Example:
+
+upstream app_servers {
+    least_time header;
+    server 192.168.101.14:5024;
+    server 192.168.101.15:5024;
+}
+
+
+
+7. Consistent Hashing (For Caching or Data Distribution)
+How it works: Maps requests to servers based on a hash of a key (e.g., URL, header, or cookie).
+When to use: Use for distributed caching or applications like content delivery networks (CDNs).
+
+Example:
+
+upstream app_servers {
+    hash $request_uri;
+    server 192.168.101.14:5024;
+    server 192.168.101.15:5024;
+}
+
+
+8. Dynamic Load Balancing (Using DNS or APIs)
+How it works: Dynamically updates backend servers based on DNS or an external API.
+When to use: Useful in cloud environments or when servers scale dynamically.
+
+Example:
+
+upstream app_servers {
+    server backend1.example.com;
+    server backend2.example.com;
+}
+
+
+9. Proxy Protocol for Load Balancers
+How it works: Preserves the client’s original IP when requests pass through additional load balancers (e.g., AWS ELB).
+When to use: When chaining multiple load balancers or preserving client information is critical.
+
+Example:
+
+upstream app_servers {
+    server 192.168.101.14:5024;
+    server 192.168.101.15:5024;
+}
+
+location / {
+    proxy_pass http://app_servers;
+    proxy_protocol on;
+}
+
+
+10. Failover
+How it works: Sends requests to the primary server and uses a backup server only if the primary is down.
+When to use: Ensures high availability with a primary-backup setup.
+
+Example:
+
+
+upstream app_servers {
+    server 192.168.101.14:5024 max_fails=3 fail_timeout=30s;
+    server 192.168.101.15:5024 backup;
+}
+
